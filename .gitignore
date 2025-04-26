@@ -1,0 +1,23 @@
+# Ignore node_modules folder (for Node.js projects)
+node_modules/
+
+# Ignore vendor folder (for Composer dependencies)
+vendor/
+
+# Ignore .env file (for sensitive information)
+.env
+
+# Ignore uploads folder
+uploads/
+
+# Ignore IDE/editor files
+.vscode/
+.idea/
+
+# Ignore temporary files
+*.log
+*.tmp
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
