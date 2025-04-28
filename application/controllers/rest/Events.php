@@ -12,7 +12,7 @@ class Events extends CI_Controller {
     }
 
     public function create() {
-
+        
        // $user_token = $this->input->get_request_header('Authorization');
        // echo $user_token;
        // exit();
@@ -29,6 +29,7 @@ class Events extends CI_Controller {
         $data = [
             'user_id'      => $user_id,
             'event_title'  => $this->input->post('event_title'),
+            'event_description'  => $this->input->post('event_description'),
             'currency'     => $this->input->post('currency'),
             'township'     => $this->input->post('township'),
             'city'         => $this->input->post('city'),
@@ -38,7 +39,6 @@ class Events extends CI_Controller {
             'start_date'   => $this->input->post('start_date'),
             'end_date'     => $this->input->post('end_date'),
         ];
-      
        
         // Upload event picture if provided
         if (!empty($_FILES['event_picture']['name'])) {
@@ -65,7 +65,7 @@ class Events extends CI_Controller {
                 return;
             }
         }
-
+       
         if ($this->db->insert('events', $data)) {
             echo json_encode(['status' => 'success', 'message' => 'Event created successfully']);
         } else {
@@ -118,6 +118,7 @@ class Events extends CI_Controller {
         $updateData = [
             'user_id'      => $user_id, // Ensure user_id is set to the authenticated user
             'event_title'  => $this->input->post('event_title'),
+            'event_description'  => $this->input->post('event_description'),
             'currency'     => $this->input->post('currency'),
             'township'     => $this->input->post('township'),
             'city'         => $this->input->post('city'),
@@ -171,23 +172,41 @@ class Events extends CI_Controller {
 
     public function get_user_events()
     {
-        
-      
         $user_id = $this->get_authenticated_user($this);
-       
+    
         if (!$user_id) {
             echo json_encode(['status' => 'error', 'message' => 'Unauthorized']);
             return;
         }
 
+        // Get events for the authenticated user
         $events = $this->db->get_where('events', ['user_id' => $user_id])->result();
 
+        // If events are found, add additional data
         if (!empty($events)) {
+            foreach ($events as $event) {
+                // Fetch township data
+                $township = $this->db->get_where('bs_item_location_townships', ['id' => $event->township])->row();
+
+                // Fetch city data
+                $city = $this->db->get_where('bs_item_location_cities', ['id' => $event->city])->row();
+
+                // Fetch property data
+                $property = $this->db->get_where('bs_items_property_by', ['id' => $event->property_id])->row();
+
+                // Add the additional data to the event object
+                $event->township_data= $township ;
+                $event->city_data = $city ;
+                $event->property_data =$property;
+            }
+
+            // Return the events along with additional data
             echo json_encode(['status' => 'success', 'events' => $events]);
         } else {
             echo json_encode(['status' => 'error', 'message' => 'No events found for this user']);
         }
     }
+
 
 
 
